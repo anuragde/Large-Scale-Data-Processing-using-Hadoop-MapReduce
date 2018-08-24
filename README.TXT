@@ -14,15 +14,15 @@ TASK 2
 Compilation Steps:
 
 1. hdfs dfs -put ~/inputTweets.txt/ ~/input
-2. hadoop com.sun.tools.javac.Main *.java
-3. jar cf PairsandStripes.jar *.class
-4. hadoop jar PairsandStripes.jar CoOccurrenceDriver pairs ~/input/inputTweets.txt ~/pairsOutput
-5. hadoop jar PairsandStripes.jar CoOccurrenceDriver stripes ~/input/inputTweets.txt ~/stripesOutput
-6. hdfs dfs -get ~/pairsOutput
-7. hdfs dfs -get ~/stripesOutput
+2. hadoop com.sun.tools.javac.Main WordCooccurrencePairs.java
+3. hadoop com.sun.tools.javac.Main WordCooccurrenceStripes.java
+4. jar cf wcPairs.jar WordCooccurrencePairs*.class
+5. jar cf wcStripes.jar WordCooccurrenceStripes*.class
+6. hadoop jar wcPairs.jar ~/input/inputTweets.txt ~/pairsOutput
+7. hadoop jar wcStripes.jar ~/input/inputTweets.txt ~/stripesOutput
+8. hdfs dfs -get ~/pairsOutput
+9. hdfs dfs -get ~/stripesOutput
 
-References:
-https://github.com/bbejeck/hadoop-algorithms
 
 ###############
 ACTIVITY 1 
