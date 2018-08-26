@@ -19,7 +19,7 @@
   import java.util.Set;
   public class WordCooccurrenceStripes {
   public static String csvFile;
-
+    
   public static class MyMapWritable extends MapWritable implements Writable{
     @Override
        public String toString() {
@@ -58,73 +58,40 @@
                      }
     }
 
-   public static class TokenizerMapper extends Mapper<Object, Text, Text, MyMapWritable>{
-   MyMapWritable mapWritable = new MyMapWritable();
-   int lineNum=0;
-   HashMap<String,String> hashMap=new HashMap<String,String>();
-   private Text word = new Text();
-   // protected void setup(Context context) throws IOException, InterruptedException {
-   //        Configuration conf = context.getConfiguration();
-   //        BufferedReader br = null;
-   //        String line = "";
-   //        String cvsSplitBy = ",";
-   //        try {
-   //            br = new BufferedReader(new FileReader(csvFile));
-   //            while ((line = br.readLine()) != null) {
-   //    String[] keyValue = line.split(cvsSplitBy);
-   //    StringBuilder valueString = new StringBuilder();
-   //    for(int i=1;i<keyValue.length;i++)
-   //    valueString.append(keyValue[i]+"||");
-   //    hashMap.put(keyValue[0],valueString.toString());
-   //            }
-   //        } catch (FileNotFoundException e) {
-   //            e.printStackTrace();
-   //        } catch (IOException e) {
-   //            e.printStackTrace();
-   //        } finally {
-   //            if (br != null) {
-   //                try {
-   //                    br.close();
-   //                } catch (IOException e) {
-   //                    e.printStackTrace();
-   //                }
-   //            }
-   //        }
-   //    }
-
-
-   public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
-     String val = value.toString();
-     String[] splited = val.split("\\s+");
-     int sum = 0;
-     Text mToken = new Text();
-     //private final static IntWritable one = new IntWritable(1);
-     IntWritable sumW = new IntWritable(0);
-
-     for(int i=0;i<splited.length-1;i++){
+    public static class TokenizerMapper extends Mapper<Object, Text, Text, MyMapWritable>{
        MyMapWritable mapWritable = new MyMapWritable();
-       for(int j=i+1;j<splited.length;j++){
-         String token =splited[i];
-         String neighbor = splited[j];
-         mToken = new Text(token);
+       int lineNum=0;
+       HashMap<String,String> hashMap=new HashMap<String,String>();
+       private Text word = new Text();
 
-         Text mNeighbor = new Text(neighbor);
-         if(mapWritable.containsKey(mNeighbor)){
-          sum = ((IntWritable)mapWritable.get(mNeighbor)).get() + 1;
-           mapWritable.remove(mNeighbor);
+       public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
+         String val = value.toString();
+         String[] splited = val.split("\\s+");
+         int sum = 0;
+         Text mToken = new Text();
+         //private final static IntWritable one = new IntWritable(1);
+         IntWritable sumW = new IntWritable(0);
+
+         for(int i=0;i<splited.length-1;i++){
+           MyMapWritable mapWritable = new MyMapWritable();
+           for(int j=i+1;j<splited.length;j++){
+             String token =splited[i];
+             String neighbor = splited[j];
+             mToken = new Text(token);
+             Text mNeighbor = new Text(neighbor);
+             if(mapWritable.containsKey(mNeighbor)){
+              sum = ((IntWritable)mapWritable.get(mNeighbor)).get() + 1;
+               mapWritable.remove(mNeighbor);
+             }
+              else{
+              sum = 1;
+              }
+             sumW.set(sum);
+             mapWritable.put(mNeighbor,sumW);
+           }
+           context.write(mToken, mapWritable);
          }
-          else{
-          sum = 1;
-          }
-
-         sumW.set(sum);
-
-         mapWritable.put(mNeighbor,sumW);
-
-       }
-       context.write(mToken, mapWritable);
-     }
-     }
+         }
 
    }
 
@@ -132,39 +99,26 @@
    private IntWritable result = new IntWritable();
    public void reduce(Text word, Iterable<MyMapWritable> values,Context context ) throws IOException, InterruptedException
    {
-MyMapWritable y = new MyMapWritable();
-
-
+    MyMapWritable y = new MyMapWritable();
    for (MyMapWritable val : values) {
-
-
-
      for (Map.Entry<Writable, Writable> extractData: val.entrySet()) {
        Text neighbor = new Text();
        int sum = 0;
        neighbor = new Text((Text)extractData.getKey());
-
        if(y.containsKey(neighbor)){
          IntWritable sumY = (IntWritable)y.get(neighbor);
          sum = sumY.get();
        }
-
        IntWritable x = (IntWritable)extractData.getValue();
        sum += x.get();
        result.set(sum);
        y.put(neighbor,new IntWritable(result.get()));
      }
-
-
-
    }
    for (Map.Entry<Writable, Writable> extractData: y.entrySet()) {
-    // Text neighbor1 = new Text((Text)extractData.getKey());
-     //IntWritable y = (IntWritable)extractData.getValue();
-MyMapWritable z = new MyMapWritable();
-z.put(extractData.getKey(),extractData.getValue());
-context.write(word, z);
-
+      MyMapWritable z = new MyMapWritable();
+      z.put(extractData.getKey(),extractData.getValue());
+      context.write(word, z);
 }
    }
    }
@@ -181,7 +135,6 @@ context.write(word, z);
    job.setOutputValueClass(MyMapWritable.class);
    FileInputFormat.addInputPath(job, new Path(args[0]));
    FileOutputFormat.setOutputPath(job, new Path(args[1]));
-   //csvFile = args[2];
    System.exit(job.waitForCompletion(true) ? 0 : 1);
    }
    catch(Exception e){
