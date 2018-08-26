@@ -15,14 +15,9 @@ import org.apache.hadoop.io.*;
 import org.apache.hadoop.*;
 
 public class WordCooccurrencePairs {
-
 public static class TextArrayWritable implements Writable,WritableComparable<TextArrayWritable>{
   private Class<? extends Writable> valueClass;
   private Text[] values;
-
-
-
-
  public TextArrayWritable() {
            //super(Text.class);
         }
@@ -52,8 +47,7 @@ public static class TextArrayWritable implements Writable,WritableComparable<Tex
     }
 
       public Text[] get() { return values; }
-
-
+  
      public void write(DataOutput out) throws IOException {
      out.writeInt(values.length);                 // write values
     for (int i = 0; i < values.length; i++) {
@@ -101,18 +95,15 @@ public int compareTo(TextArrayWritable o) {
 
     @Override
     public int hashCode() {
-
         int result = 17;
         result = 31 * result + values[0].hashCode();
         result = 31 * result + values[1].hashCode();
         return result;    }
-
     }
-
 
  public static class TokenizerMapper extends Mapper<Object, Text, TextArrayWritable, IntWritable>{
  private final static IntWritable one = new IntWritable(1);
-
+   
  public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
    String val = value.toString();
    String[] splited = val.split("\\s+");
@@ -120,40 +111,14 @@ public int compareTo(TextArrayWritable o) {
      for(int j=i+1;j<splited.length;j++){
        Text[] temp = new Text[2];
       TextArrayWritable output = new TextArrayWritable(temp);
-
        String token =splited[i];
        String neighbor = splited[j];
        temp[0] = new Text(token);
        temp[1] = new Text(neighbor);
        output.set(temp);
       context.write(new TextArrayWritable(output.get()), one);
-
      }
    }
-
-
-
-// StringTokenizer itr = new StringTokenizer(value.toString());
-
-
- // while (itr.hasMoreTokens()) {
- // String token =itr.nextToken();
- // String neighbor = "";
- // Text[] temp = new Text[2];
- //
- // TextArrayWritable output = new TextArrayWritable(temp);
- //
- // if(true && !token.endsWith("."))
- //    {
- //    if(itr.hasMoreTokens()){
- //    neighbor = itr.nextToken();
- //    temp[0] = new Text(token);
- //    temp[1] = new Text(neighbor);
- //    output.set(temp);
- //    context.write(new TextArrayWritable(output.get()), one);
- //    }
- //    }
- //     }
    }
  }
 
@@ -186,8 +151,6 @@ public static void main(String[] args) throws Exception {
  }
 catch(Exception e){
 e.printStackTrace();
-            //log.error("Error running MapReduce Job", e);
-
 }
 }
 }
